@@ -7,49 +7,70 @@ function AniInfo(sheetX, sheetY, direction) {
     this.direction = direction;
 }
 
-function YukikoAnimation(spriteSheet, frameWidth, frameHeight, sheetWidth,
-    frameDuration, frames, loop, scale) {
-   this.spriteSheet = spriteSheet;
-   this.frameWidth = frameWidth;
-   this.frameDuration = frameDuration;
-   this.frameHeight = frameHeight;
-   this.sheetWidth = sheetWidth;
-   this.frames = frames;
-   this.totalTime = frameDuration * frames;
-   this.elapsedTime = 0;
-   this.loop = loop;
-   this.scale = scale;
+//! ******** Animation Definition ******** */
+function Animation(spriteSheet, startX, startY, frameWidth, frameHeight, sheetWidth, frameDuration, frames, loop, scale) {
+    this.spriteSheet = spriteSheet;
+    this.startX = startX;
+    this.startY = startY;
+    this.frameWidth = frameWidth;
+    this.frameDuration = frameDuration;
+    this.frameHeight = frameHeight;
+    this.sheetWidth = sheetWidth;
+    this.frames = frames;
+    this.totalTime = frameDuration * frames;
+    this.elapsedTime = 0;
+    this.loop = loop;
+    this.scale = scale;
 }
 
-YukikoAnimation.prototype.drawFrame = function (tick, ctx, x, y) {
+Animation.prototype.drawFrame = function (tick, ctx, x, y) {
     this.elapsedTime += tick;
     if (this.isDone()) {
         if (this.loop) this.elapsedTime = 0;
     }
-    var frame = this.currentFrame();
-    var xindex = 0;
-    var yindex = 0;
-    xindex = frame % this.sheetWidth;
-    yindex = Math.floor(frame / this.sheetWidth);
 
-    //ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
-    //sx,sy,sw,sh = height of image we want to draw
-    //dw,dh = resizing
-    //dx,dy = where you want to drwa the image
+    let frame = this.currentFrame();
+    let xindex = frame % this.sheetWidth;
+    let yindex = Math.floor(frame / this.sheetWidth);
+
     ctx.drawImage(this.spriteSheet,
-                 xindex * this.frameWidth, yindex * this.frameHeight,  // source from sheet
-                 this.frameWidth, this.frameHeight,
-                 x, y,
-                 this.frameWidth * this.scale,
-                 this.frameHeight * this.scale);
+        xindex * this.frameWidth + this.startX,
+        yindex * this.frameHeight + this.startY,
+        this.frameWidth,
+        this.frameHeight,
+        x, y,
+        this.frameWidth * this.scale,
+        this.frameHeight * this.scale);
 }
 
-YukikoAnimation.prototype.currentFrame = function () {
+Animation.prototype.currentFrame = function () {
     return Math.floor(this.elapsedTime / this.frameDuration);
 }
 
-YukikoAnimation.prototype.isDone = function () {
+Animation.prototype.isDone = function () {
     return (this.elapsedTime >= this.totalTime);
+}
+
+function MaleKnightSpear(game,spritesheet) {
+    //this.ani = new entityAnimationInit(this, spritesheet);
+    this.x = 80;
+    this.y = 80;
+    this.speed = 0;
+    this.game = game;
+    this.ctx = game.ctx;
+    this.direction = 'down';
+    this.state = "walkDown";
+    this.titleScreenComp = true;
+    this.currAnimation = new Animation(spritesheet, 0, 384, 64, 62, 512, 0.1, 8, true, 2);
+}
+
+MaleKnightSpear.prototype.update = function() {
+    Entity.prototype.update.call(this);
+}
+
+MaleKnightSpear.prototype.draw = function() {
+    this.currAnimation.drawFrame(this.game.clockTick, this.ctx, this.x, this.y);
+    Entity.prototype.draw.call(this);
 }
 
 /*
@@ -290,6 +311,7 @@ AM.queueDownload("./img/runningcat.png");
 AM.queueDownload("./img/background.jpg");
 AM.queueDownload("./img/choco.png");
 AM.queueDownload("./img/yukikospritesheet.png")
+AM.queueDownload("./img/male_knight_spear.png");
 
 AM.downloadAll(function () {
     var canvas = document.getElementById("gameWorld");
@@ -304,7 +326,7 @@ AM.downloadAll(function () {
     // gameEngine.addEntity(new Cheetah(gameEngine, AM.getAsset("./img/runningcat.png")));
     // gameEngine.addEntity(new Guy(gameEngine, AM.getAsset("./img/guy.jpg")));
     gameEngine.addEntity(new Choco(gameEngine, AM.getAsset("./img/choco.png")));
-    gameEngine.addEntity(new Yukiko(gameEngine, AM.getAsset("./img/yukikospritesheet.png")));
-
+    //gameEngine.addEntity(new Yukiko(gameEngine, AM.getAsset("./img/yukikospritesheet.png")));
+    gameEngine.addEntity(new MaleKnightSpear(gameEngine, AM.getAsset("./img/male_knight_spear.png")));
     console.log("All Done!");
 });
